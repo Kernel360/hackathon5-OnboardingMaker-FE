@@ -1,16 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 const TeamList: React.FC = () => {
-  const { missionId, teamId } = useParams();
-  const [selectedTeamCount, setSelectedTeamCount] = useState<number>(13); // 예시로 13팀 선택
-  const teams = Array.from({ length: selectedTeamCount }, (_, index) => index + 1); // 선택한 팀 수만큼 팀 배열 생성
+  const { missionId } = useParams();
+  const [title, setTitle] = useState('');
+  const [teamCount, setTeamCount] = useState(0);
+
+  useEffect(() => {
+    const fetchMissionInfo = async () => {
+      try {
+        const response = await fetch(`/api/mission/${missionId}/teams`);
+        if (!response.ok) throw new Error('데이터 불러오기 실패');
+        const data = await response.json();
+        setTitle(data.title);
+        setTeamCount(data.totalGroups);
+      } catch (error) {
+        console.error('에러 발생:', error);
+      }
+    };
+
+    fetchMissionInfo();
+  }, [missionId]);
+
+  const teams = Array.from({ length: teamCount }, (_, index) => index + 1);
+
+  const handleTeamClick = (team: number) => {
+    alert(`팀 ${team} 페이지로 이동`);
+    // 예: navigate(`/missions/${missionId}/teams/${team}`);
+  };
 
   return (
     <MainContainer>
-          <Title>온보딩 미션</Title>
-          <Subtitle>새로운 팀원과 함께 온보딩 미션을 완료하세요</Subtitle>
+      <Title>{title}</Title>
+      <Subtitle>새로운 팀원과 함께 온보딩 미션을 완료하세요</Subtitle>
 
       <TeamGrid>
         {teams.map((team) => (
@@ -21,14 +44,7 @@ const TeamList: React.FC = () => {
       </TeamGrid>
     </MainContainer>
   );
-
-  function handleTeamClick(team: number) {
-    alert(`팀 ${team} 페이지로 이동`);
-    // 여기에 실제 팀 페이지로 이동하는 로직을 추가하면 됩니다.
-    // 예: history.push(`/team/${team}`);
-  }
 };
-
 
 const MainContainer = styled.div`
   display: grid;
@@ -77,6 +93,5 @@ const TeamNumber = styled.p`
   font-size: 1.125rem;
   font-weight: 600;
 `;
-
 
 export default TeamList;
