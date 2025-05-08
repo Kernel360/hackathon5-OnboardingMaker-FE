@@ -37,7 +37,7 @@ const MissionUpload: React.FC = () => {
     console.log(JSON.stringify(payload, null, 2));
 
     try {
-      const response = await fetch(`/missionWrite`, {
+      const response = await fetch(`/api/missionWrite`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
