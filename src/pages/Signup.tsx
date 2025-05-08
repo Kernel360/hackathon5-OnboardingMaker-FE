@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { Container, Paper, Typography, TextField, Button, Box } from "@mui/material";
 
 const Signup: React.FC = () => {
