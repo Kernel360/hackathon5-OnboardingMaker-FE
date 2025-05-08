@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import styled from 'styled-components';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import styled from "styled-components";
 
 const TeamList: React.FC = () => {
   const { missionId } = useParams();
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
   const [teamCount, setTeamCount] = useState(0);
 
   useEffect(() => {
     const fetchMissionInfo = async () => {
       try {
         const response = await fetch(`/api/mission/${missionId}/teams`);
-        if (!response.ok) throw new Error('데이터 불러오기 실패');
+        if (!response.ok) throw new Error("데이터 불러오기 실패");
         const data = await response.json();
         setTitle(data.title);
         setTeamCount(data.totalGroups);
       } catch (error) {
-        console.error('에러 발생:', error);
+        console.error("에러 발생:", error);
       }
     };
 
@@ -38,7 +38,7 @@ const TeamList: React.FC = () => {
       <TeamGrid>
         {teams.map((team) => (
           <TeamCard key={team} onClick={() => handleTeamClick(team)}>
-            <TeamNumber>{team}팀</TeamNumber>
+            <TeamNumber>{team} 조</TeamNumber>
           </TeamCard>
         ))}
       </TeamGrid>
@@ -68,7 +68,7 @@ const Subtitle = styled.p`
 
 const TeamGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1.5rem;
   width: 100%;
 `;
