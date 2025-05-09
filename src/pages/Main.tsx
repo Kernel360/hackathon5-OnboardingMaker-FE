@@ -9,6 +9,7 @@ interface OnboardingMission {
   description: string;
   status: "완료" | "진행 중" | "미시작";
   deadline: string;
+  missionId: number;
 }
 
 const Main: React.FC = () => {
@@ -30,6 +31,7 @@ const Main: React.FC = () => {
           (mission: { deadline: string | number | Date }, index: number) => {
             const today = new Date();
             const deadline = new Date(mission.deadline);
+
             let status = "미시작";
 
             const formattedDeadlineStr = deadline.toISOString().split("T")[0];
@@ -95,13 +97,17 @@ const Main: React.FC = () => {
                   {mission.deadline}
                 </DueDate>
                 <div style={{ flexGrow: 1 }} />
-                <StartButton
-                  disabled={
-                    mission.status !== "진행 중" && mission.status !== "미시작"
-                  }
-                >
-                  미션 시작
-                </StartButton>
+                <Link to={`/missions/${mission.missionId}/teams`}>
+                  {" "}
+                  <StartButton
+                    disabled={
+                      mission.status !== "진행 중" &&
+                      mission.status !== "미시작"
+                    }
+                  >
+                    미션 시작
+                  </StartButton>
+                </Link>
               </CardContent>
             </Card>
           ))}
