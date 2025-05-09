@@ -1,46 +1,53 @@
-# Getting Started with Create React App
+### 📝 온보딩 메이커
+kernel360 데일리 미션 관리를 위한 협업 웹 서비스 <br/>
+📆 2025.05.07 ~ 2025.05.09
+<br/>
+<br/>
+### 프로젝트 소개
+😤 노션으로 온보딩 데일리 미션을 관리할 때 발생하던 번잡함, 불편함을 해소하기 위함 <br/>
+ex) 노션에서 실수로 다른 조의 갤러리를 삭제 <br/>
+=> 온보딩 데일리 미션 웹을 만들어서 깔끔하게 관리할 수 있게 해보자!
+<br/>
+<br/>
+### 주요 기능
+1. 로그인 / 회원가입 (Session 기반 인증)
+2. 데일리 미션 리스트 조회
+3. 관리자 데일리 미션 등록
+4. 데일리 미션별로 생성된 팀 목록 조회
+5. 미션별 팀 페이지에서 댓글 및 대댓글 CRUD (자기참조 구조)
+<br/>
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### 팀 소개
+| 이현경 | 이제훈 | 정다은 | 조나단 | 김수정 |
+|--------|--------|--------|--------|--------|
+| 역할 A | 역할 B | 역할 C | 역할 D | 역할 E |
+<br/>
 
-## Available Scripts
+### 기술 스택
+🛠️ **Frontend**<br/>
+<br/>
+<img src="https://img.shields.io/badge/Typescript-3178C6?style=flat-square&logo=Typescript&logoColor=white"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=React&logoColor=black"/>&nbsp;&nbsp;<img src="https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=Vercel&logoColor=white"/>
+<br/>
+<br/>
+🛠️ **Backend**<br/>
+<br/>
+<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=OpenJDK&logoColor=white">&nbsp;&nbsp;<img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">&nbsp;&nbsp;<img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=white">&nbsp;&nbsp;<img src="https://img.shields.io/badge/Amazon%20S3-569A31?style=for-the-badge&logo=Amazon%20S3&logoColor=white">&nbsp;&nbsp;
+<br/>
+<br/>
+🛠️ **Infra & DevOps**<br/>
+<br/>
+<img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white">&nbsp;&nbsp;<img src="https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=Amazon%20EC2&logoColor=white">
+<br/>
+<br/>
+### 🗺 ERD
+![Image](https://github.com/user-attachments/assets/abd097bc-24ad-4734-b1be-f2c7dea745ce)
+<br/>
+<br/>
+### 🗺 API 명세서
+<br/>
+<br/>
 
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 팀 소개
+| 이현경 | 이제훈 | 정다은 | 조나단 | 김수정 |
+|--------|--------|--------|--------|--------|
+| 역할 A | 역할 B | 역할 C | 역할 D | 역할 E |
