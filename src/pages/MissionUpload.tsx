@@ -1,16 +1,62 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import React, { useState } from "react";
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 const MissionUpload: React.FC = () => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [teams, setTeams] = useState(1);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // 여기서 폼 제출 처리
-    console.log({ title, description, dueDate, teams });
+    const now = new Date();
+
+    const pad = (n: number) => n.toString().padStart(2, "0");
+
+    const formatDate = (d: Date) => {
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    };
+
+    const createdAt = formatDate(new Date());
+    const deadlineDate = new Date(deadline);
+    deadlineDate.setHours(23, 59, 59);
+    const formattedDeadline = formatDate(deadlineDate);
+
+    const payload = {
+      totalGroups: teams,
+      createdAt,
+      deadline: formattedDeadline,
+      title,
+      description,
+    };
+
+    console.log(JSON.stringify(payload, null, 2));
+
+    try {
+      const response = await fetch(`/api/missionWrite`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("미션 생성 실패");
+
+      const result = await response.json();
+      alert("미션이 성공적으로 생성되었습니다!");
+      setTitle("");
+      setDescription("");
+      setDeadline("");
+      setTeams(1);
+      navigate(`/missions/${result.missionId}/teams`);
+    } catch (error) {
+      console.error("에러 발생:", error);
+      alert("미션 생성 중 문제가 발생했습니다.");
+    }
   };
 
   return (
@@ -42,15 +88,18 @@ const MissionUpload: React.FC = () => {
           <Label>마감 기한</Label>
           <Input
             type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
             required
           />
         </FormField>
 
         <FormField>
           <Label>팀 수</Label>
-          <Select value={teams} onChange={(e) => setTeams(Number(e.target.value))}>
+          <Select
+            value={teams}
+            onChange={(e) => setTeams(Number(e.target.value))}
+          >
             {Array.from({ length: 13 }, (_, i) => i + 1).map((teamCount) => (
               <option key={teamCount} value={teamCount}>
                 {teamCount} 팀
