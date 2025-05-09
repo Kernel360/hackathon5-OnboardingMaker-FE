@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, Paper, Typography, TextField, Button, Box } from "@mui/material";
+import { Container, Paper, Typography, TextField, Button, Box, FormControlLabel, Checkbox } from "@mui/material";
 
 const Signup: React.FC = () => {
   const [form, setForm] = useState({
@@ -7,6 +7,7 @@ const Signup: React.FC = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    isAdmin: false,
   });
   const [error, setError] = useState("");
 
@@ -90,6 +91,16 @@ const Signup: React.FC = () => {
               required
             />
 
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={form.isAdmin}
+                onChange={(e) => setForm({ ...form, isAdmin: e.target.checked })}
+              />
+            }
+            label="관리자"
+          />
+
             {error && (
               <Typography color="error" variant="body2" align="center">
                 {error}
@@ -101,7 +112,6 @@ const Signup: React.FC = () => {
               variant="contained"
               color="primary"
               fullWidth
-              sx={{ mt: 2 }}
             >
               회원가입
             </Button>
