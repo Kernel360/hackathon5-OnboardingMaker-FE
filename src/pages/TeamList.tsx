@@ -12,7 +12,9 @@ const TeamList: React.FC = () => {
   useEffect(() => {
     const fetchMissionInfo = async () => {
       try {
-        const response = await fetch(`/api/mission/${missionId}/teams`);
+        const response = await fetch(`http://localhost:8080/api/mission/${missionId}/teams`, {
+          credentials: "include",
+        });
         if (!response.ok) throw new Error("데이터 불러오기 실패");
         const data = await response.json();
         setTitle(data.title);

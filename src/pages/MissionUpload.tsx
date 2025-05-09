@@ -40,6 +40,7 @@ const MissionUpload: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          redentials: "include",
         },
         body: JSON.stringify(payload),
       });

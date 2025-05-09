@@ -24,7 +24,9 @@ const Main: React.FC = () => {
   useEffect(() => {
     const fetchMissions = async () => {
       try {
-        const response = await fetch("/api/mission/list");
+        const response = await fetch("/api/mission/list", {
+          credentials: "include",
+        });
         const data = await response.json();
 
         const missionsWithIdAndStatus = data.map(
