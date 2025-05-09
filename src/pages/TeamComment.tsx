@@ -1,61 +1,107 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import { Box, Button, Divider, List, ListItem, ListItemText, Paper, TextField, Typography, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
 
-interface Comment {
-  id: number;
-  author: string;
-  text: string;
-  replies?: Comment[]; //대댓글로 확장
+interface Reply {
+  replyId: number;
+  userId: number;
+  groupId: number;
+  content: string;
+  finalTime: string;
+  parentReplyId?: number | null;
+  childReplies?: Reply[];
+}
+
+interface MissionInfo {
+  title: string;
+  deadline: string;
 }
 
 const TeamComment: React.FC = () => {
-  const { missionId, teamId } = useParams();
+  const { missionId, teamId } = useParams<{ missionId: string; teamId: string }>();
+  const groupId = Number(teamId);
 
-  const [comment, setComment] = useState<string>("");
-  const [comments, setComments] = useState<Comment[]>([
-    { id: 1, author: "Alice", text: "좋은 미션이네요!" },
-    { id: 2, author: "Bob", text: "재미있을 것 같아요!" },
-  ]);
+  const [mission, setMission] = useState<MissionInfo | null>(null);
+  const [newReplyText, setNewReplyText] = useState("");
+  const [mainReplies, setMainReplies] = useState<Reply[]>([]);
+  const [childReplies, setChildReplies] = useState<Record<number, Reply[]>>({});
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
-  const [editText, setEditText] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [replyTexts, setReplyTexts] = useState<{ [key: number]: string }>({});
-  const [replyOpen, setReplyOpen] = useState<{ [key: number]: boolean }>({});
+  const [editText, setEditText] = useState("");
+  const [replyInputTexts, setReplyInputTexts] = useState<Record<number, string>>({});
+  const [replyInputOpen, setReplyInputOpen] = useState<Record<number, boolean>>({});
 
-  const handleAddComment = () => {
-    if (comment.trim()) {
-      setComments([
-        ...comments,
-        {
-          id: Date.now(),
-          author: "나",
-          text: comment,
-        },
-      ]);
-      setComment("");
-    }
-  };
+  // 페이지 로딩 시 미션 정보·댓글들 불러오기
+  useEffect(() => {
+    fetch(`/api/mission/${missionId}`)
+      .then(r => r.ok ? r.json() : Promise.reject("미션 정보 실패"))
+      .then((data: MissionInfo) => setMission(data))
+      .catch(console.error);
+  
+    fetch(`/api/reply/${teamId}`)
+      .then(r => r.ok ? r.json() : Promise.reject("댓글 조회 실패"))
+      .then((all: Reply[]) => {
+        const mains = all.filter(r => r.groupId === groupId);
+        const nestedMap: Record<number, Reply[]> = {};
+  
+        mains.forEach(main => {
+          if (main.childReplies) {
+            nestedMap[main.replyId] = main.childReplies;
+          }
+        });
+  
+        console.log("📌 메인 댓글 목록:", mains);
+        console.log("📌 대댓글 맵:", nestedMap);
+  
+        setMainReplies(mains);
+        setChildReplies(nestedMap);
+      })
+      .catch(console.error);
+  }, [missionId, groupId]);
+  // ——————————————————————————————
 
-  const confirmDelete = () => {
-    setComments((prev) => prev.filter((c) => c.id !== deleteTarget));
-    setDeleteTarget(null);
-  };
-
-  const handleEditToggle = (id: number, currentText: string) => {
+  // 댓글 수정 가능
+  const handleEditToggle = (id: number, content: string) => {
     setEditingId(id);
-    setEditText(currentText);
+    setEditText(content);
   };
 
-  const handleEditSave = () => {
-    if (editingId !== null) {
-      setComments(
-        comments.map((c) =>
-          c.id === editingId ? { ...c, text: editText } : c
+  const handleEditSave = async () => {
+    if (editingId === null) return;
+  
+    const replyToUpdate = mainReplies.find(r => r.replyId === editingId);
+    if (!replyToUpdate) return;
+  
+    try {
+      const response = await fetch(`/api/reply/${editingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: replyToUpdate.userId,
+          groupId: replyToUpdate.groupId,
+          content: editText,
+          parentReplyId: replyToUpdate.parentReplyId,
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("댓글 수정 실패:", response.status, errorText);
+        return;
+      }
+  
+      const updatedReply: Reply = await response.json();
+      setMainReplies(prev =>
+        prev.map(reply =>
+          reply.replyId === editingId ? updatedReply : reply
         )
       );
       setEditingId(null);
       setEditText("");
+    } catch (err) {
+      console.error("댓글 수정 중 예외 발생:", err);
     }
   };
 
@@ -63,43 +109,109 @@ const TeamComment: React.FC = () => {
     setEditingId(null);
     setEditText("");
   };
+  // ——————————————————————————————
+
+  // 댓글 삭제 가능
+  const confirmDelete = async () => {
+    if (deleteTarget === null) return;
+  
+    try {
+      const response = await fetch(`/api/reply/${deleteTarget}`, {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("댓글 삭제 실패:", response.status, errorText);
+        return;
+      }
+  
+      // 메인 댓글에서 삭제
+      setMainReplies(prev => prev.filter(reply => reply.replyId !== deleteTarget));
+  
+      // 대댓글에서 삭제
+      setChildReplies(prev => {
+        const updated = { ...prev };
+        delete updated[deleteTarget];
+        // 모든 대댓글 목록에서 해당 댓글이 부모인 항목 제거
+        for (const key in updated) {
+          updated[key] = updated[key].filter(r => r.parentReplyId !== deleteTarget);
+        }
+        return updated;
+      });
+  
+      setDeleteTarget(null);
+    } catch (error) {
+      console.error("댓글 삭제 중 예외 발생:", error);
+    }
+  };
+  // ——————————————————————————————
+
+  //!!!!!!!!!!!!!!!댓글 등록 안됨!!!!!!!!!!!!!!
+  const handleAddComment = async () => {
+    if (!newReplyText.trim()) return;
+  
+    try {
+      const requestBody = {
+        userId: 0, // 로그인한 유저 ID로 교체 필요
+        groupId,
+        content: newReplyText,
+        parentReplyId: null,
+      };
+  
+      const response = await fetch("/api/reply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("댓글 등록 실패:", response.status, errorText);
+        return;
+      }
+  
+      const savedReply: Reply = await response.json();
+  
+      setMainReplies(prev => [...prev, savedReply]);
+      setNewReplyText("");
+    } catch (err) {
+      console.error("네트워크 오류 또는 기타 예외:", err);
+    }
+  };
 
   const handleAddReply = (parentId: number) => {
-    const text = replyTexts[parentId]?.trim();
-    if (text) {
-      setComments((prev) =>
-        prev.map((comment) =>
-          comment.id === parentId
-            ? {
-                ...comment,
-                replies: [
-                  ...(comment.replies || []),
-                  {
-                    id: Date.now(),
-                    author: "나",
-                    text,
-                  },
-                ],
-              }
-            : comment
-        )
-      );
-      setReplyTexts((prev) => ({ ...prev, [parentId]: "" }));
-      setReplyOpen((prev) => ({ ...prev, [parentId]: false }));
-    }
+    const text = replyInputTexts[parentId]?.trim();
+    if (!text) return;
+    const newReply: Reply = {
+      replyId: Date.now(),
+      userId: 0,
+      groupId,
+      content: text,
+      finalTime: new Date().toISOString(),
+      parentReplyId: parentId,
+    };
+    setChildReplies(prev => ({
+      ...prev,
+      [parentId]: [...(prev[parentId] || []), newReply],
+    }));
+    setReplyInputTexts(prev => ({ ...prev, [parentId]: "" }));
+    setReplyInputOpen(prev => ({ ...prev, [parentId]: false }));
   };
 
   return (
     <Box sx={{ maxWidth: "80%", mx: "auto", mt: 4, p: 3 }}>
       <Paper elevation={3} sx={{ p: 3 }}>
         <Typography variant="h5" gutterBottom>
-          📝 온보딩 미션: API 연동 과제
+          📝 온보딩 미션: {mission?.title || "NULL"}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          📅 날짜: 2025-05-08
+          📅 날짜: {mission ? new Date(mission.deadline).toLocaleDateString() : "NULL"}
         </Typography>
         <Typography variant="body1" color="text.secondary" mb={2}>
-          👥 3조
+          👥 {teamId}조
         </Typography>
 
         <Divider sx={{ my: 2 }} />
@@ -111,10 +223,10 @@ const TeamComment: React.FC = () => {
         <TextField
           fullWidth
           multiline
-          minRows={2}
-          placeholder="댓글을 입력하세요..."
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
+          minRows={4}
+          placeholder="댓글을 입력하세요"
+          value={newReplyText}
+          onChange={(e) => setNewReplyText(e.target.value)}
           sx={{ mb: 2 }}
         />
         <Button variant="contained" onClick={handleAddComment}>
@@ -122,20 +234,19 @@ const TeamComment: React.FC = () => {
         </Button>
 
         <List sx={{ mt: 3 }}>
-          {comments.map((c) => (
-            <React.Fragment key={c.id}>
+          {mainReplies.map((reply) => (
+            <React.Fragment key={reply.replyId}>
               <ListItem alignItems="flex-start">
                 <Box sx={{ width: "100%" }}>
-                  {/* 댓글 본문 */}
                   <Box display="flex" justifyContent="space-between">
                     <ListItemText
                       primary={
                         <Typography variant="subtitle2" color="text.secondary">
-                          ✍️ {c.author}
+                          ✍️ 사용자 #{reply.userId}
                         </Typography>
                       }
                       secondary={
-                        editingId === c.id ? (
+                        editingId === reply.replyId ? (
                           <TextField
                             fullWidth
                             multiline
@@ -144,94 +255,73 @@ const TeamComment: React.FC = () => {
                             sx={{ mt: 0.5 }}
                           />
                         ) : (
-                          <Typography
-                            sx={{ whiteSpace: "pre-wrap", mt: 0.5 }}
-                            component="span"
-                          >
-                            {c.text}
+                          <>
+                          <Typography sx={{ whiteSpace: "pre-wrap", mt: 0.5 }}>
+                            {reply.content}
                           </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                            🕒 {new Date(reply.finalTime).toLocaleString()}
+                          </Typography>
+                        </>
                         )
                       }
                     />
-                    {/* 수정/삭제 버튼 */}
                     <Stack spacing={1} direction="column" alignItems="flex-end" ml={2}>
-                      {editingId === c.id ? (
+                      {editingId === reply.replyId ? (
                         <>
-                          <Button size="small" onClick={handleEditSave}>
-                            수정 완료
-                          </Button>
-                          <Button size="small" onClick={handleEditCancel}>
-                            취소
-                          </Button>
+                          <Button size="small" onClick={handleEditSave}>수정 완료</Button>
+                          <Button size="small" onClick={handleEditCancel}>취소</Button>
                         </>
                       ) : (
                         <>
-                          <Button size="small" onClick={() => handleEditToggle(c.id, c.text)}>
-                            수정
-                          </Button>
-                          <Button
-                            size="small"
-                            color="error"
-                            onClick={() => setDeleteTarget(c.id)}
-                          >
-                            삭제
-                          </Button>
+                          <Button size="small" onClick={() => handleEditToggle(reply.replyId, reply.content)}>수정</Button>
+                          <Button size="small" color="error" onClick={() => setDeleteTarget(reply.replyId)}>삭제</Button>
                         </>
                       )}
                     </Stack>
                   </Box>
 
-                  {/* 대댓글 리스트 */}
-                  {c.replies && c.replies.length > 0 && (
+                  {childReplies[reply.replyId]?.length > 0 && (
                     <List component="div" disablePadding sx={{ pl: 4, mt: 1 }}>
-                      {c.replies.map((reply) => (
-                        <ListItem key={reply.id}>
+                      {childReplies[reply.replyId].map(child => (
+                        <ListItem key={child.replyId}>
                           <ListItemText
-                            primary={
-                              <Typography variant="subtitle2" color="text.secondary">
-                                ↪️ {reply.author}
-                              </Typography>
-                            }
-                            secondary={
-                              <Typography sx={{ whiteSpace: "pre-wrap" }}>
-                                {reply.text}
-                              </Typography>
-                            }
+                            primary={<Typography variant="subtitle2" color="text.secondary">↪️ 사용자 #{child.userId}</Typography>}
+                            secondary={<Typography sx={{ whiteSpace: "pre-wrap" }}>{child.content}</Typography>}
                           />
                         </ListItem>
                       ))}
                     </List>
                   )}
 
-                  {/* 답글 입력 영역 */}
                   <Box sx={{ pl: 4, mt: 1 }}>
                     <Button
                       size="small"
                       onClick={() =>
-                        setReplyOpen((prev) => ({ ...prev, [c.id]: !prev[c.id] }))
+                        setReplyInputOpen((prev) => ({ ...prev, [reply.replyId]: !prev[reply.replyId] }))
                       }
                     >
-                      {replyOpen[c.id] ? "" : "답글 달기"}
+                      {replyInputOpen[reply.replyId] ? "" : "답글 달기"}
                     </Button>
 
-                    {replyOpen[c.id] && (
+                    {replyInputOpen[reply.replyId] && (
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
                         <TextField
                           fullWidth
                           size="small"
                           placeholder="대댓글 입력"
-                          value={replyTexts[c.id] || ""}
+                          value={replyInputTexts[reply.replyId] || ""}
                           onChange={(e) =>
-                            setReplyTexts({ ...replyTexts, [c.id]: e.target.value })
+                            setReplyInputTexts({ ...replyInputTexts, [reply.replyId]: e.target.value })
                           }
                         />
-                        <Button size="small" onClick={() => handleAddReply(c.id)}>
+                        <Button size="small" onClick={() => handleAddReply(reply.replyId)}>
                           등록
                         </Button>
                         <Button
                           size="small"
                           onClick={() =>
-                            setReplyOpen((prev) => ({ ...prev, [c.id]: false }))
+                            setReplyInputOpen((prev) => ({ ...prev, [reply.replyId]: false }))
                           }
                         >
                           취소
@@ -259,6 +349,7 @@ const TeamComment: React.FC = () => {
           <Button onClick={confirmDelete}>확인</Button>
         </DialogActions>
       </Dialog>
+
     </Box>
   );
 };
