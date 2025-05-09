@@ -20,18 +20,18 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-       const response = await fetch("/api/user/login", {
+      const response = await fetch("/api/user/login", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           email: form.email,
           password: form.password,
-    }),
-    credentials: "include",
-  });
+        }),
+        credentials: "include",
+      });
       if (response.ok) {
         // 로그인 성공 시 메인 페이지로 이동
-        navigate("/");
+        navigate("/main");
       } else {
         const errorMsg = await response.text();
         alert(`로그인 실패: ${errorMsg}`);
