@@ -13,8 +13,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Main />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/main" element={<Main />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/missionupload" element={<MissionUpload />} />
         <Route path="/missions/:missionId/teams" element={<TeamList />} />
