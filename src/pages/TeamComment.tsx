@@ -182,7 +182,7 @@ const TeamComment: React.FC = () => {
 
     try {
       const requestBody = {
-        userId: 0, // 로그인한 유저 ID로 교체 필요
+        userId: 15, // 로그인한 유저 ID로 교체 필요
         groupId,
         content: newReplyText,
         parentReplyId: null,
