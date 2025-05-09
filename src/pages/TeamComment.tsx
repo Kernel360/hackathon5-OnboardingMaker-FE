@@ -217,7 +217,7 @@ const TeamComment: React.FC = () => {
     if (!text) return;
     const newReply: Reply = {
       replyId: Date.now(),
-      userId: 0,
+      userId: 15,
       groupId,
       content: text,
       finalTime: new Date().toISOString(),
