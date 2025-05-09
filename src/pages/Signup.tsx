@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Container, Paper, Typography, TextField, Button, Box, FormControlLabel, Checkbox } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+
 
 const Signup: React.FC = () => {
   const [form, setForm] = useState({
@@ -10,19 +12,45 @@ const Signup: React.FC = () => {
     isAdmin: false,
   });
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // 간단한 유효성 검사
+    // 비밀번호 일치 검사
     if (form.password !== form.confirmPassword) {
       setError("비밀번호가 일치하지 않습니다.");
       return;
     }
 
     setError("");
-    // 회원가입 처리 로직 여기에 작성
-    console.log("회원가입 정보:", form);
+
+    try {
+      const response = await fetch("/api/user/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nickname: form.nickname,
+          email: form.email,
+          password: form.password,
+          isAdmin: form.isAdmin,
+        }),
+        credentials: "include",
+      });
+
+      if (response.status === 201) {
+        alert("회원가입이 완료되었습니다.");
+        navigate("/login");
+      } else {
+        const errorMsg = await response.text();
+        setError(`회원가입 실패: ${errorMsg}`);
+      }
+    } catch (error) {
+      console.error("회원가입 요청 중 오류:", error);
+      setError("서버 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -38,12 +66,7 @@ const Signup: React.FC = () => {
       >
         <Paper
           elevation={3}
-          sx={{
-            p: 4,
-            width: "100%",
-            borderRadius: 2,
-            bgcolor: "background.paper",
-          }}
+          sx={{ p: 4, width: "100%", borderRadius: 2, bgcolor: "background.paper" }}
         >
           <Typography variant="h5" align="center" gutterBottom>
             회원가입
@@ -51,8 +74,8 @@ const Signup: React.FC = () => {
 
           <Box
             component="form"
-            noValidate
             onSubmit={handleSubmit}
+            noValidate
             sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}
           >
             <TextField
@@ -86,9 +109,19 @@ const Signup: React.FC = () => {
               name="confirmPassword"
               type="password"
               value={form.confirmPassword}
-              onChange={(e) => setForm({ ...form,confirmPassword: e.target.value })}
+              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
               fullWidth
               required
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.isAdmin}
+                  onChange={(e) => setForm({ ...form, isAdmin: e.target.checked })}
+                  name="isAdmin"
+                />
+              }
+              label="관리자 계정으로 가입"
             />
 
           <FormControlLabel
@@ -107,6 +140,7 @@ const Signup: React.FC = () => {
               </Typography>
             )}
 
+        
             <Button
               type="submit"
               variant="contained"
