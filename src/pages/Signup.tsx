@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Container, Paper, Typography, TextField, Button, Box, FormControlLabel, Checkbox } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
+
 const Signup: React.FC = () => {
   const [form, setForm] = useState({
     nickname: "",
@@ -123,13 +124,29 @@ const Signup: React.FC = () => {
               label="관리자 계정으로 가입"
             />
 
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={form.isAdmin}
+                onChange={(e) => setForm({ ...form, isAdmin: e.target.checked })}
+              />
+            }
+            label="관리자"
+          />
+
             {error && (
               <Typography color="error" variant="body2" align="center">
                 {error}
               </Typography>
             )}
 
-            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+        
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+            >
               회원가입
             </Button>
           </Box>
