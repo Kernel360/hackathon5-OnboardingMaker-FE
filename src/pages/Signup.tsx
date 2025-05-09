@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, Paper, Typography, TextField, Button, Box } from "@mui/material";
+import { Container, Paper, Typography, TextField, Button, Box, FormControlLabel, Checkbox } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const Signup: React.FC = () => {
@@ -8,6 +8,7 @@ const Signup: React.FC = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    isAdmin: false,
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -33,8 +34,9 @@ const Signup: React.FC = () => {
           nickname: form.nickname,
           email: form.email,
           password: form.password,
-          isAdmin: true
+          isAdmin: form.isAdmin,
         }),
+        credentials: "include",
       });
 
       if (response.status === 201) {
@@ -109,6 +111,16 @@ const Signup: React.FC = () => {
               onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
               fullWidth
               required
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.isAdmin}
+                  onChange={(e) => setForm({ ...form, isAdmin: e.target.checked })}
+                  name="isAdmin"
+                />
+              }
+              label="관리자 계정으로 가입"
             />
 
             {error && (
