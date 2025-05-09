@@ -51,15 +51,3 @@ ex) 노션에서 실수로 다른 조의 갤러리를 삭제 <br/>
 ![Image](https://github.com/user-attachments/assets/abd097bc-24ad-4734-b1be-f2c7dea745ce)
 <br/>
 <br/>
-### 🗺 API 명세서
-|기능|	method|	url	|request	|response	|status|
-|-------------|----|---------------|-----------|---------|--------------|
-| 작성|POST|	/schedules/users/|	요청 body	|등록 정보	|200: 정상 등록|
-| 목록 조회|GET|/schedules/users/|	요청 param	|다건 응답 정보	|200: 정상 조회|
-| 일정 조회|GET|/schedules/{scheduleId}|	요청 param|	단건 응답 정보|	200: 정상 조회|
-| 수정|PUT|/schedules/{scheduleId}|	요청 body	|수정 정보	|200: 정상 수정|
-| 삭제|DELETE|/schedules/{scheduleId}|	요청 param	|삭제 정보	|200: 정상 삭제|
-|유저 등록|POST|/schedules/register|요청 body|등록 정보|200: 정상 등록|
-| 수정|PUT|/schedules/user-profile/{userId}|요청 body|수정 정보|200: 정상 수정|
-<br/>
-<br/>
