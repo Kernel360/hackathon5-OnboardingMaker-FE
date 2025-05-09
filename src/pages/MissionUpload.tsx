@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { API_BASE_URL } from "../config/ApiUrl";
 import { useNavigate } from "react-router-dom";
 
 const MissionUpload: React.FC = () => {

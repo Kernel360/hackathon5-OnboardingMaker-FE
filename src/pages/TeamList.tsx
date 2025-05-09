@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 const TeamList: React.FC = () => {
   const { missionId } = useParams();
   const [title, setTitle] = useState("");
   const [teamCount, setTeamCount] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMissionInfo = async () => {
@@ -26,8 +28,7 @@ const TeamList: React.FC = () => {
   const teams = Array.from({ length: teamCount }, (_, index) => index + 1);
 
   const handleTeamClick = (team: number) => {
-    alert(`팀 ${team} 페이지로 이동`);
-    // 예: navigate(`/missions/${missionId}/teams/${team}`);
+    navigate(`/missions/${missionId}/teams/${team}`);
   };
 
   return (
